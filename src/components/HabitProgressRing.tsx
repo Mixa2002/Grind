@@ -61,9 +61,10 @@ const HabitProgressRing = memo<HabitProgressRingProps>(({
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             strokeLinecap="round"
-            style={isFull ? {
-              filter: 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.5))',
-            } : undefined}
+            style={{
+              transition: 'stroke-dashoffset 0.3s ease-out',
+              ...(isFull ? { filter: 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.5))' } : {}),
+            }}
           />
         )}
       </svg>

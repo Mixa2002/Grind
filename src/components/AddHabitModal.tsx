@@ -10,10 +10,12 @@ export default function AddHabitModal({ isOpen, onClose }: AddHabitModalProps) {
   const addHabit = useStore((s) => s.addHabit);
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetForm = useCallback(() => {
     setName('');
     setError('');
+    setIsSubmitting(false);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -22,14 +24,20 @@ export default function AddHabitModal({ isOpen, onClose }: AddHabitModalProps) {
   }, [onClose, resetForm]);
 
   const handleSubmit = useCallback(async () => {
+    if (isSubmitting) return;
     const trimmed = name.trim();
     if (!trimmed) {
       setError('Habit name is required');
       return;
     }
-    await addHabit(trimmed);
-    handleClose();
-  }, [name, addHabit, handleClose]);
+    setIsSubmitting(true);
+    try {
+      await addHabit(trimmed);
+      handleClose();
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [isSubmitting, name, addHabit, handleClose]);
 
   if (!isOpen) return null;
 
@@ -37,14 +45,15 @@ export default function AddHabitModal({ isOpen, onClose }: AddHabitModalProps) {
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/60"
+        className="absolute inset-0 bg-black/60 animate-overlay-fade"
         onClick={handleClose}
         role="presentation"
       />
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-lg bg-gray-900 rounded-t-2xl p-6 pb-8 animate-slide-up"
+        className="relative w-full max-w-lg bg-gray-900 rounded-t-2xl p-6 pb-8 animate-slide-up overflow-y-auto"
+        style={{ maxHeight: '90vh' }}
         role="dialog"
         aria-modal="true"
         aria-label="Add new habit"
@@ -89,9 +98,10 @@ export default function AddHabitModal({ isOpen, onClose }: AddHabitModalProps) {
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-colors"
+          disabled={isSubmitting}
+          className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Add Habit
+          {isSubmitting ? 'Adding...' : 'Add Habit'}
         </button>
       </div>
     </div>

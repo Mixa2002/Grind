@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Task } from '../types';
 import { formatTime, getTodayISO } from '../utils';
 import { useStore } from '../stores/useStore';
@@ -25,16 +26,18 @@ interface TaskBlockProps {
   gridEndMinute: number;
   columnIndex: number;
   totalColumns: number;
+  animationIndex?: number;
 }
 
-export default function TaskBlock({
+const TaskBlock = memo<TaskBlockProps>(function TaskBlock({
   task,
   pixelsPerMinute,
   gridStartMinute,
   gridEndMinute,
   columnIndex,
   totalColumns,
-}: TaskBlockProps) {
+  animationIndex = 0,
+}) {
   const toggleTaskDone = useStore((s) => s.toggleTaskDone);
   const todayISO = getTodayISO();
   const isDone = task.completions[todayISO] === true;
@@ -54,16 +57,19 @@ export default function TaskBlock({
   const endTime = task.startTime + task.duration;
   const stars = '★'.repeat(task.hardness);
 
+  const hardnessBorderClass = `hardness-border-${task.hardness}`;
+
   return (
     <button
       type="button"
       onClick={() => toggleTaskDone(task.id, todayISO)}
-      className={`absolute rounded-lg border px-2 py-1 overflow-hidden cursor-pointer text-left transition-opacity ${colorClass} ${isDone ? 'opacity-50' : 'opacity-100'}`}
+      className={`absolute rounded-lg border px-2 py-1 overflow-hidden cursor-pointer text-left transition-opacity animate-task-fade-in ${hardnessBorderClass} ${colorClass} ${isDone ? 'opacity-50' : 'opacity-100'}`}
       style={{
         top: `${topOffset}px`,
         height: `${Math.max(height, 20)}px`,
         left: `calc(${leftPercent}% + 2px)`,
         width: `calc(${widthPercent}% - 4px)`,
+        animationDelay: `${animationIndex * 50}ms`,
       }}
       aria-label={`${task.title}, ${formatTime(task.startTime)} to ${formatTime(endTime)}, hardness ${task.hardness}${isDone ? ', completed' : ''}`}
     >
@@ -82,4 +88,8 @@ export default function TaskBlock({
       )}
     </button>
   );
-}
+});
+
+TaskBlock.displayName = 'TaskBlock';
+
+export default TaskBlock;

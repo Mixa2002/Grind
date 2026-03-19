@@ -83,7 +83,7 @@ export default function WeekPage() {
             return (
               <div
                 key={day.iso}
-                className="flex flex-col"
+                className={`flex flex-col ${isToday ? 'bg-amber-950/10 rounded-lg' : ''}`}
                 style={{ minWidth: '160px', width: '160px' }}
               >
                 {/* Column Header */}
@@ -127,9 +127,16 @@ export default function WeekPage() {
                 {/* Tasks List */}
                 <div className="flex-1 overflow-y-auto pr-0.5">
                   {day.tasks.length === 0 ? (
-                    <p className="text-center text-sm text-gray-600 mt-4 opacity-60">
-                      No tasks
-                    </p>
+                    <div className="flex flex-col items-center mt-4 opacity-60">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-gray-600 mb-1" aria-hidden="true">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.5" />
+                        <path d="M9 12h6M9 16h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                      <p className="text-center text-sm text-gray-600">
+                        No tasks
+                      </p>
+                    </div>
                   ) : (
                     day.tasks.map((task) => (
                       <WeekTaskCard

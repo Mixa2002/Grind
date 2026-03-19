@@ -144,7 +144,7 @@ export default function TimeGrid({ tasks }: TimeGridProps) {
           className="absolute top-0 bottom-0"
           style={{ left: `${HOUR_LABEL_WIDTH}px`, right: 0 }}
         >
-          {tasks.map((task) => {
+          {tasks.map((task, index) => {
             const layout = overlapMap.get(task.id) ?? { col: 0, total: 1 };
             return (
               <TaskBlock
@@ -155,6 +155,7 @@ export default function TimeGrid({ tasks }: TimeGridProps) {
                 gridEndMinute={GRID_END}
                 columnIndex={layout.col}
                 totalColumns={layout.total}
+                animationIndex={index}
               />
             );
           })}
@@ -169,7 +170,7 @@ export default function TimeGrid({ tasks }: TimeGridProps) {
             <div className="flex items-center">
               <div
                 className="rounded-full bg-red-500"
-                style={{ width: 8, height: 8, marginLeft: `${HOUR_LABEL_WIDTH - 4}px` }}
+                style={{ width: 6, height: 6, marginLeft: `${HOUR_LABEL_WIDTH - 3}px` }}
               />
               <div className="flex-1 h-px bg-red-500" />
             </div>

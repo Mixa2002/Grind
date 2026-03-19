@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, memo } from 'react';
+import type { Habit } from '../types';
 import { useStore } from '../stores/useStore';
 import {
   getHabitStreak,
@@ -17,6 +18,106 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ] as const;
 
+interface HabitRowProps {
+  habit: Habit;
+  todayISO: string;
+  onToggle: (id: string) => void;
+  onDelete: (id: string, name: string) => void;
+}
+
+const HabitRow = memo<HabitRowProps>(function HabitRow({ habit, todayISO, onToggle, onDelete }) {
+  const isDone = habit.completions[todayISO] === true;
+  const streak = getHabitStreak(habit);
+  const [bouncing, setBouncing] = useState(false);
+
+  const handleToggle = useCallback(() => {
+    if (!isDone) {
+      setBouncing(true);
+      setTimeout(() => setBouncing(false), 300);
+    }
+    onToggle(habit.id);
+  }, [isDone, onToggle, habit.id]);
+
+  return (
+    <li
+      className={`group flex items-center gap-3 p-3 rounded-lg border transition-colors hover-lift ${
+        isDone
+          ? 'border-l-green-500 border-l-[3px] border-y-gray-700 border-r-gray-700 bg-green-950/20'
+          : 'border-gray-700 bg-gray-900'
+      }`}
+    >
+      {/* Toggle checkbox */}
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={isDone}
+        aria-label={`Mark ${habit.name} as ${isDone ? 'incomplete' : 'complete'}`}
+        onClick={handleToggle}
+        className={`w-6 h-6 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${bouncing ? 'animate-habit-bounce' : ''} ${
+          isDone
+            ? 'bg-green-600 border-green-600 text-white'
+            : 'border-gray-500 hover:border-gray-300'
+        }`}
+      >
+        {isDone && (
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M3 7l3 3 5-5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
+      </button>
+
+      {/* Name */}
+      <span className={`flex-1 text-sm font-medium ${isDone ? 'text-gray-300' : 'text-gray-100'}`}>
+        {habit.name}
+      </span>
+
+      {/* Streak */}
+      <span className="text-xs text-gray-400 whitespace-nowrap streak-transition">
+        {streak > 0 && (
+          <>
+            <span className="mr-0.5" role="img" aria-label="streak">
+              {'\uD83D\uDD25'}
+            </span>
+            {streak} {streak === 1 ? 'day' : 'days'}
+          </>
+        )}
+      </span>
+
+      {/* Delete */}
+      <button
+        type="button"
+        onClick={() => onDelete(habit.id, habit.name)}
+        className="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+        aria-label={`Delete ${habit.name}`}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M5 2h6M2 4h12M6 4v8M10 4v8M3.5 4l.5 9a1 1 0 001 1h6a1 1 0 001-1l.5-9"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+    </li>
+  );
+});
+
+HabitRow.displayName = 'HabitRow';
+
 export default function HabitsPage() {
   const { habits, isLoading, toggleHabitCompletion, deleteHabit } = useStore();
   const [modalOpen, setModalOpen] = useState(false);
@@ -26,6 +127,31 @@ export default function HabitsPage() {
   const monthLabel = `${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`;
 
   const monthGrid = useMemo(() => getCurrentMonthDates(), []);
+
+  // Memoize the earliest habit creation date
+  const earliestHabitDate = useMemo(() => {
+    if (habits.length === 0) return null;
+    return habits.reduce((earliest, h) => {
+      const d = h.createdAt.split('T')[0];
+      return d < earliest ? d : earliest;
+    }, habits[0].createdAt.split('T')[0]);
+  }, [habits]);
+
+  // Memoize habit percentage calculations for the calendar
+  const habitPercentages = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const entry of monthGrid) {
+      const iso = formatDateISO(entry.date);
+      if (iso > todayISO || !entry.isCurrentMonth) continue;
+      // Show nothing for days before any habits were created
+      if (earliestHabitDate && iso < earliestHabitDate) {
+        map.set(iso, -1); // -1 means "no habits existed yet"
+      } else {
+        map.set(iso, getHabitDayPercentage(habits, iso));
+      }
+    }
+    return map;
+  }, [habits, monthGrid, todayISO, earliestHabitDate]);
 
   const handleToggle = useCallback(
     (habitId: string) => {
@@ -68,93 +194,26 @@ export default function HabitsPage() {
         </div>
 
         {habits.length === 0 ? (
-          <p className="text-sm text-gray-500 py-6 text-center">
-            No habits yet. Tap + to start building your streaks.
-          </p>
+          <div className="flex flex-col items-center py-6 text-center">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" className="text-gray-600 mb-2" aria-hidden="true">
+              <circle cx="18" cy="18" r="14" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M12 18l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <p className="text-sm text-gray-500">
+              No habits yet. Tap + to start building your streaks.
+            </p>
+          </div>
         ) : (
           <ul className="space-y-2">
-            {habits.map((habit) => {
-              const isDone = habit.completions[todayISO] === true;
-              const streak = getHabitStreak(habit);
-
-              return (
-                <li
-                  key={habit.id}
-                  className={`group flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                    isDone
-                      ? 'border-l-green-500 border-l-[3px] border-y-gray-700 border-r-gray-700 bg-green-950/20'
-                      : 'border-gray-700 bg-gray-900'
-                  }`}
-                >
-                  {/* Toggle checkbox */}
-                  <button
-                    type="button"
-                    role="checkbox"
-                    aria-checked={isDone}
-                    aria-label={`Mark ${habit.name} as ${isDone ? 'incomplete' : 'complete'}`}
-                    onClick={() => handleToggle(habit.id)}
-                    className={`w-6 h-6 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
-                      isDone
-                        ? 'bg-green-600 border-green-600 text-white'
-                        : 'border-gray-500 hover:border-gray-300'
-                    }`}
-                  >
-                    {isDone && (
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 14 14"
-                        fill="none"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M3 7l3 3 5-5"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                  </button>
-
-                  {/* Name */}
-                  <span className={`flex-1 text-sm font-medium ${isDone ? 'text-gray-300' : 'text-gray-100'}`}>
-                    {habit.name}
-                  </span>
-
-                  {/* Streak */}
-                  <span className="text-xs text-gray-400 whitespace-nowrap">
-                    {streak > 0 && (
-                      <>
-                        <span className="mr-0.5" role="img" aria-label="streak">
-                          🔥
-                        </span>
-                        {streak} {streak === 1 ? 'day' : 'days'}
-                      </>
-                    )}
-                  </span>
-
-                  {/* Delete */}
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(habit.id, habit.name)}
-                    className="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                    aria-label={`Delete ${habit.name}`}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <path
-                        d="M5 2h6M2 4h12M6 4v8M10 4v8M3.5 4l.5 9a1 1 0 001 1h6a1 1 0 001-1l.5-9"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                </li>
-              );
-            })}
+            {habits.map((habit) => (
+              <HabitRow
+                key={habit.id}
+                habit={habit}
+                todayISO={todayISO}
+                onToggle={handleToggle}
+                onDelete={handleDelete}
+              />
+            ))}
           </ul>
         )}
       </div>
@@ -189,7 +248,9 @@ export default function HabitsPage() {
                 return <div key={iso} className="flex flex-col items-center py-1" />;
               }
 
-              const pct = isFuture ? 0 : getHabitDayPercentage(habits, iso);
+              const cachedPct = habitPercentages.get(iso);
+              const beforeHabitsExisted = cachedPct === -1;
+              const pct = isFuture || beforeHabitsExisted ? 0 : (cachedPct ?? 0);
 
               return (
                 <div
@@ -205,7 +266,7 @@ export default function HabitsPage() {
                   >
                     {entry.date.getDate()}
                   </span>
-                  <HabitProgressRing percentage={pct} isFuture={isFuture} />
+                  <HabitProgressRing percentage={pct} isFuture={isFuture || beforeHabitsExisted} />
                 </div>
               );
             })}

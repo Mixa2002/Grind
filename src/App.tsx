@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
 import { useStore } from './stores/useStore';
 import DayPage from './pages/DayPage';
 import HabitsPage from './pages/HabitsPage';
@@ -12,6 +12,24 @@ const tabs = [
   { path: '/week', label: 'Week' },
   { path: '/month', label: 'Month' },
 ] as const;
+
+function AppRoutes() {
+  const location = useLocation();
+
+  return (
+    <main className="max-w-2xl mx-auto">
+      <div key={location.pathname} className="animate-page-fade">
+        <Routes location={location}>
+          <Route path="/day" element={<DayPage />} />
+          <Route path="/habits" element={<HabitsPage />} />
+          <Route path="/week" element={<WeekPage />} />
+          <Route path="/month" element={<MonthPage />} />
+          <Route path="*" element={<Navigate to="/day" replace />} />
+        </Routes>
+      </div>
+    </main>
+  );
+}
 
 export default function App() {
   const loadData = useStore((s) => s.loadData);
@@ -43,15 +61,7 @@ export default function App() {
           </div>
         </nav>
 
-        <main className="max-w-2xl mx-auto">
-          <Routes>
-            <Route path="/day" element={<DayPage />} />
-            <Route path="/habits" element={<HabitsPage />} />
-            <Route path="/week" element={<WeekPage />} />
-            <Route path="/month" element={<MonthPage />} />
-            <Route path="*" element={<Navigate to="/day" replace />} />
-          </Routes>
-        </main>
+        <AppRoutes />
       </div>
     </BrowserRouter>
   );

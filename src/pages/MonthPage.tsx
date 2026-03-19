@@ -164,9 +164,16 @@ export default function MonthPage() {
         {/* Task list */}
         <div className="flex-1 overflow-y-auto px-4 pb-4">
           {selectedDayTasks.length === 0 ? (
-            <p className="text-center text-sm text-gray-600 mt-6 opacity-60">
-              No tasks for this day
-            </p>
+            <div className="flex flex-col items-center mt-6 opacity-60">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-gray-600 mb-2" aria-hidden="true">
+                <rect x="4" y="6" width="24" height="22" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M4 12h24" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M10 3v5M22 3v5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <p className="text-center text-sm text-gray-600">
+                No tasks for this day
+              </p>
+            </div>
           ) : (
             selectedDayTasks.map((task) => (
               <WeekTaskCard

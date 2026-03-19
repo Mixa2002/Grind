@@ -37,6 +37,7 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
   const [repeatable, setRepeatable] = useState(false);
   const [repeatDays, setRepeatDays] = useState<string[]>([]);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [titleError, setTitleError] = useState('');
   const [durationError, setDurationError] = useState('');
   const [repeatDaysError, setRepeatDaysError] = useState('');
@@ -53,6 +54,7 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
       setHardness(3);
       setRepeatable(false);
       setRepeatDays([]);
+      setIsSubmitting(false);
       setTitleError('');
       setDurationError('');
       setRepeatDaysError('');
@@ -67,6 +69,7 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
   }, []);
 
   const handleSubmit = useCallback(async () => {
+    if (isSubmitting) return;
     let hasError = false;
 
     // Title validation
@@ -103,20 +106,24 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
 
     if (hasError) return;
 
-    const startTime = hour * 60 + minute;
-    await addTask({
-      title: title.trim(),
-      date: defaultDate,
-      startTime,
-      duration: finalDuration,
-      hardness,
-      repeatable,
-      repeatDays: repeatable ? repeatDays : [],
-      source,
-    });
-
-    onClose();
-  }, [title, hour, minute, duration, customDuration, useCustomDuration, hardness, repeatable, repeatDays, addTask, onClose, defaultDate, source]);
+    setIsSubmitting(true);
+    try {
+      const startTime = hour * 60 + minute;
+      await addTask({
+        title: title.trim(),
+        date: defaultDate,
+        startTime,
+        duration: finalDuration,
+        hardness,
+        repeatable,
+        repeatDays: repeatable ? repeatDays : [],
+        source,
+      });
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [isSubmitting, title, hour, minute, duration, customDuration, useCustomDuration, hardness, repeatable, repeatDays, addTask, onClose, defaultDate, source]);
 
   if (!isOpen) return null;
 
@@ -126,14 +133,15 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/60"
+        className="absolute inset-0 bg-black/60 animate-overlay-fade"
         onClick={onClose}
         role="presentation"
       />
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-lg bg-gray-900 rounded-t-2xl p-6 pb-8 animate-slide-up"
+        className="relative w-full max-w-lg bg-gray-900 rounded-t-2xl p-6 pb-8 animate-slide-up overflow-y-auto"
+        style={{ maxHeight: '90vh' }}
         role="dialog"
         aria-modal="true"
         aria-label="Add new task"
@@ -346,9 +354,10 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-colors"
+          disabled={isSubmitting}
+          className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Add Task
+          {isSubmitting ? 'Adding...' : 'Add Task'}
         </button>
       </div>
     </div>
