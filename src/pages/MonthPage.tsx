@@ -4,7 +4,6 @@ import {
   getCurrentMonthDates,
   getTasksForDate,
   formatDateISO,
-  formatTime,
   getTodayISO,
 } from '../utils';
 import TaskFormModal from '../components/TaskFormModal';
