@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useStore } from '../stores/useStore.ts';
 import { formatTime } from '../utils/index.ts';
 
-const DURATION_PRESETS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 90, 120];
+const DURATION_PRESETS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 90, 120, 150, 180];
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 const GRID_START_HOUR = 6;
 const GRID_END_HOUR = 22;
@@ -31,15 +31,12 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
   const [hour, setHour] = useState(9);
   const [minute, setMinute] = useState(0);
   const [duration, setDuration] = useState(30);
-  const [customDuration, setCustomDuration] = useState('');
-  const [useCustomDuration, setUseCustomDuration] = useState(false);
   const [hardness, setHardness] = useState(3);
   const [repeatable, setRepeatable] = useState(false);
   const [repeatDays, setRepeatDays] = useState<string[]>([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [titleError, setTitleError] = useState('');
-  const [durationError, setDurationError] = useState('');
   const [repeatDaysError, setRepeatDaysError] = useState('');
 
   // Reset all form fields when the modal opens (not on close, to avoid flicker)
@@ -49,14 +46,11 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
       setHour(9);
       setMinute(0);
       setDuration(30);
-      setCustomDuration('');
-      setUseCustomDuration(false);
       setHardness(3);
       setRepeatable(false);
       setRepeatDays([]);
       setIsSubmitting(false);
       setTitleError('');
-      setDurationError('');
       setRepeatDaysError('');
     }
   }, [isOpen]);
@@ -80,22 +74,6 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
       setTitleError('');
     }
 
-    // Duration validation
-    const finalDuration = useCustomDuration ? parseInt(customDuration, 10) : duration;
-    if (useCustomDuration) {
-      if (isNaN(finalDuration) || finalDuration < 5) {
-        setDurationError('Duration must be at least 5 minutes');
-        hasError = true;
-      } else if (finalDuration % 5 !== 0) {
-        setDurationError('Duration must be a multiple of 5 minutes');
-        hasError = true;
-      } else {
-        setDurationError('');
-      }
-    } else {
-      setDurationError('');
-    }
-
     // Repeat days validation
     if (repeatable && repeatDays.length === 0) {
       setRepeatDaysError('Select at least one weekday');
@@ -113,7 +91,7 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
         title: title.trim(),
         date: defaultDate,
         startTime,
-        duration: finalDuration,
+        duration,
         hardness,
         repeatable,
         repeatDays: repeatable ? repeatDays : [],
@@ -123,7 +101,7 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
     } finally {
       setIsSubmitting(false);
     }
-  }, [isSubmitting, title, hour, minute, duration, customDuration, useCustomDuration, hardness, repeatable, repeatDays, addTask, onClose, defaultDate, source]);
+  }, [isSubmitting, title, hour, minute, duration, hardness, repeatable, repeatDays, addTask, onClose, defaultDate, source]);
 
   if (!isOpen) return null;
 
@@ -234,70 +212,21 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
         {/* Duration */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Duration</label>
-          {!useCustomDuration ? (
-            <div className="flex gap-2 items-center">
-              <select
-                value={duration}
-                onChange={(e) => setDuration(Number(e.target.value))}
-                className="px-3 py-2 rounded-lg border focus:outline-none"
-                style={{ backgroundColor: '#ffffff', borderColor: 'var(--border-light)', color: 'var(--text-primary)' }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
-                onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border-light)')}
-                aria-label="Duration in minutes"
-              >
-                {DURATION_PRESETS.map((d) => (
-                  <option key={d} value={d}>
-                    {d >= 60 ? `${d / 60}h${d % 60 ? ` ${d % 60}m` : ''}` : `${d}m`}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={() => setUseCustomDuration(true)}
-                className="text-xs hover:opacity-80" style={{ color: 'var(--accent)' }}
-              >
-                Custom
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-2 items-center">
-              <input
-                type="number"
-                value={customDuration}
-                onChange={(e) => {
-                  setCustomDuration(e.target.value);
-                  setDurationError('');
-                }}
-                placeholder="Minutes"
-                min={5}
-                step={5}
-                className="w-24 px-3 py-2 rounded-lg border focus:outline-none"
-                style={{
-                  backgroundColor: '#ffffff',
-                  borderColor: durationError ? '#dc2626' : 'var(--border-light)',
-                  color: 'var(--text-primary)',
-                }}
-                onFocus={(e) => { if (!durationError) e.currentTarget.style.borderColor = 'var(--accent)'; }}
-                onBlur={(e) => { if (!durationError) e.currentTarget.style.borderColor = 'var(--border-light)'; }}
-                aria-label="Custom duration in minutes"
-              />
-              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>min</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setUseCustomDuration(false);
-                  setCustomDuration('');
-                  setDurationError('');
-                }}
-                className="text-xs hover:opacity-80" style={{ color: 'var(--accent)' }}
-              >
-                Presets
-              </button>
-            </div>
-          )}
-          {durationError && (
-            <p className="mt-1 text-sm" style={{ color: '#dc2626' }}>{durationError}</p>
-          )}
+          <select
+            value={duration}
+            onChange={(e) => setDuration(Number(e.target.value))}
+            className="px-3 py-2 rounded-lg border focus:outline-none"
+            style={{ backgroundColor: '#ffffff', borderColor: 'var(--border-light)', color: 'var(--text-primary)' }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+            onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border-light)')}
+            aria-label="Duration in minutes"
+          >
+            {DURATION_PRESETS.map((d) => (
+              <option key={d} value={d}>
+                {d} min
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Hardness */}
@@ -305,17 +234,22 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
           <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
             Hardness
           </label>
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {[1, 2, 3, 4, 5].map((level) => (
               <button
                 key={level}
                 type="button"
                 onClick={() => setHardness(level)}
-                className="text-2xl transition-colors"
-                style={{ color: level <= hardness ? '#84B179' : 'var(--border-light)' }}
-                aria-label={`Hardness ${level} of 5`}
+                className="px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors"
+                style={
+                  level === hardness
+                    ? { backgroundColor: 'var(--accent)', color: '#ffffff' }
+                    : { backgroundColor: 'var(--accent-tint)', color: 'var(--text-secondary)' }
+                }
+                aria-label={`Hardness level ${level} of 5`}
+                aria-pressed={level === hardness}
               >
-                &#9733;
+                Lv.{level}
               </button>
             ))}
           </div>

@@ -20,13 +20,9 @@ const WeekTaskCard = memo<WeekTaskCardProps>(function WeekTaskCard({ task, dateI
   }, [deleteTask, task.id]);
 
   const isDone = task.completions[dateISO] === true;
-  const stars = '\u2605'.repeat(task.hardness);
   const hardnessBorderClass = `hardness-border-${task.hardness}`;
 
-  const durationLabel =
-    task.duration >= 60
-      ? `${Math.floor(task.duration / 60)}h${task.duration % 60 ? ` ${task.duration % 60}m` : ''}`
-      : `${task.duration} min`;
+  const durationLabel = `${task.duration} min`;
 
   return (
     <div
@@ -77,7 +73,7 @@ const WeekTaskCard = memo<WeekTaskCardProps>(function WeekTaskCard({ task, dateI
         {/* Duration + Hardness row */}
         <span className="flex items-center gap-1.5 mt-0.5">
           <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>{durationLabel}</span>
-          <span className="text-[10px] leading-none" style={{ color: 'var(--accent)' }}>{stars}</span>
+          <span className="text-[10px] font-semibold leading-none" style={{ color: 'var(--accent)' }}>Lv.{task.hardness}</span>
         </span>
 
         {/* Repeatable badge */}
