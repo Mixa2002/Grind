@@ -40,12 +40,12 @@ const HabitRow = memo<HabitRowProps>(function HabitRow({ habit, todayISO, onTogg
 
   return (
     <li
-      className={`group flex items-center gap-3 p-3 rounded-lg border transition-colors hover-lift ${
+      className={`group flex items-center gap-3 p-3 rounded-lg border transition-colors hover-lift`}
+      style={
         isDone
-          ? 'border-y-gray-700 border-r-gray-700'
-          : 'border-gray-700 bg-gray-900'
-      }`}
-      style={isDone ? { borderLeftWidth: '3px', borderLeftColor: 'var(--accent)', backgroundColor: 'rgba(132, 177, 121, 0.08)' } : undefined}
+          ? { borderColor: 'var(--border-light)', borderLeftWidth: '3px', borderLeftColor: 'var(--accent)', backgroundColor: 'rgba(199, 234, 187, 0.3)' }
+          : { borderColor: 'var(--border-light)', backgroundColor: 'var(--bg-card)' }
+      }
     >
       {/* Toggle checkbox */}
       <button
@@ -54,12 +54,12 @@ const HabitRow = memo<HabitRowProps>(function HabitRow({ habit, todayISO, onTogg
         aria-checked={isDone}
         aria-label={`Mark ${habit.name} as ${isDone ? 'incomplete' : 'complete'}`}
         onClick={handleToggle}
-        className={`w-6 h-6 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${bouncing ? 'animate-habit-bounce' : ''} ${
+        className={`w-6 h-6 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${bouncing ? 'animate-habit-bounce' : ''}`}
+        style={
           isDone
-            ? 'text-white'
-            : 'border-gray-500 hover:border-gray-300'
-        }`}
-        style={isDone ? { backgroundColor: 'var(--accent)', borderColor: 'var(--accent)' } : undefined}
+            ? { backgroundColor: 'var(--accent)', borderColor: 'var(--accent)', color: '#ffffff' }
+            : { borderColor: 'var(--accent-pale)' }
+        }
       >
         {isDone && (
           <svg
@@ -81,12 +81,12 @@ const HabitRow = memo<HabitRowProps>(function HabitRow({ habit, todayISO, onTogg
       </button>
 
       {/* Name */}
-      <span className={`flex-1 text-sm font-medium ${isDone ? 'text-gray-300' : 'text-gray-100'}`}>
+      <span className="flex-1 text-sm font-medium" style={{ color: isDone ? 'var(--text-secondary)' : 'var(--text-primary)' }}>
         {habit.name}
       </span>
 
       {/* Streak */}
-      <span className="text-xs whitespace-nowrap streak-transition" style={{ color: 'var(--accent-light)' }}>
+      <span className="text-xs whitespace-nowrap streak-transition" style={{ color: 'var(--accent)' }}>
         {streak > 0 && (
           <>
             <span className="mr-0.5" role="img" aria-label="streak">
@@ -101,7 +101,10 @@ const HabitRow = memo<HabitRowProps>(function HabitRow({ habit, todayISO, onTogg
       <button
         type="button"
         onClick={() => onDelete(habit.id, habit.name)}
-        className="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+        className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+        style={{ color: 'var(--text-secondary)' }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
+        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
         aria-label={`Delete ${habit.name}`}
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -173,7 +176,7 @@ export default function HabitsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400">
+      <div className="flex items-center justify-center h-64" style={{ color: 'var(--text-secondary)' }}>
         Loading...
       </div>
     );
@@ -184,7 +187,7 @@ export default function HabitsPage() {
       {/* --- Today's Habits --- */}
       <div className="px-6 pt-4 pb-3">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-xl font-bold text-white">Today's Habits</h1>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Today's Habits</h1>
           <button
             type="button"
             onClick={() => setModalOpen(true)}
@@ -200,11 +203,11 @@ export default function HabitsPage() {
 
         {habits.length === 0 ? (
           <div className="flex flex-col items-center py-6 text-center">
-            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" className="text-gray-600 mb-2" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" className="mb-2" style={{ color: 'var(--accent-pale)' }} aria-hidden="true">
               <circle cx="18" cy="18" r="14" stroke="currentColor" strokeWidth="1.5" />
               <path d="M12 18l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               No habits yet. Tap + to start building your streaks.
             </p>
           </div>
@@ -225,8 +228,8 @@ export default function HabitsPage() {
 
       {/* --- Monthly Completion Calendar --- */}
       {habits.length > 0 && (
-        <div className="mt-3 border-t border-gray-800 px-4 pt-3 pb-4 overflow-y-auto">
-          <h2 className="text-base font-semibold text-gray-200 mb-2 px-2">
+        <div className="mt-3 px-4 pt-3 pb-4 overflow-y-auto" style={{ borderTop: '1px solid var(--border-light)' }}>
+          <h2 className="text-base font-semibold mb-2 px-2" style={{ color: 'var(--text-primary)' }}>
             {monthLabel}
           </h2>
 
@@ -235,7 +238,8 @@ export default function HabitsPage() {
             {DAY_HEADERS.map((day) => (
               <div
                 key={day}
-                className="text-center text-xs font-medium text-gray-500 py-1"
+                className="text-center text-xs font-medium py-1"
+                style={{ color: 'var(--text-secondary)' }}
               >
                 {day}
               </div>
@@ -266,9 +270,9 @@ export default function HabitsPage() {
                     className={`text-[10px] mb-0.5 ${
                       isToday
                         ? 'font-semibold'
-                        : 'text-gray-500'
+                        : ''
                     }`}
-                    style={isToday ? { color: 'var(--accent-light)' } : undefined}
+                    style={{ color: isToday ? 'var(--accent)' : 'var(--text-secondary)' }}
                   >
                     {entry.date.getDate()}
                   </span>

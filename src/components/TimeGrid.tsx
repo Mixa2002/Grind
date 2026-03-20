@@ -126,14 +126,14 @@ export default function TimeGrid({ tasks }: TimeGridProps) {
           return (
             <div key={minute} className="absolute left-0 right-0" style={{ top: `${top}px` }}>
               <span
-                className="absolute text-xs text-gray-500 select-none"
-                style={{ width: `${HOUR_LABEL_WIDTH}px`, left: 0 }}
+                className="absolute text-xs select-none"
+                style={{ width: `${HOUR_LABEL_WIDTH}px`, left: 0, color: 'var(--text-secondary)' }}
               >
                 {formatTime(minute)}
               </span>
               <div
-                className="absolute border-t border-gray-800/60"
-                style={{ left: `${HOUR_LABEL_WIDTH}px`, right: 0 }}
+                className="absolute"
+                style={{ left: `${HOUR_LABEL_WIDTH}px`, right: 0, borderTop: '1px solid rgba(199, 234, 187, 0.6)' }}
               />
             </div>
           );
@@ -169,10 +169,10 @@ export default function TimeGrid({ tasks }: TimeGridProps) {
           >
             <div className="flex items-center">
               <div
-                className="rounded-full bg-red-500"
-                style={{ width: 6, height: 6, marginLeft: `${HOUR_LABEL_WIDTH - 3}px` }}
+                className="rounded-full"
+                style={{ width: 6, height: 6, marginLeft: `${HOUR_LABEL_WIDTH - 3}px`, backgroundColor: 'var(--accent)' }}
               />
-              <div className="flex-1 h-px bg-red-500" />
+              <div className="flex-1 h-px" style={{ backgroundColor: 'var(--accent)' }} />
             </div>
           </div>
         )}

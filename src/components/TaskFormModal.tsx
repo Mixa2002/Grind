@@ -133,25 +133,28 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/60 animate-overlay-fade"
+        className="absolute inset-0 bg-black/50 animate-overlay-fade"
         onClick={onClose}
         role="presentation"
       />
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-lg bg-gray-900 rounded-t-2xl p-6 pb-8 animate-slide-up overflow-y-auto"
-        style={{ maxHeight: '90vh' }}
+        className="relative w-full max-w-lg rounded-t-2xl p-6 pb-8 animate-slide-up overflow-y-auto"
+        style={{ maxHeight: '90vh', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
         role="dialog"
         aria-modal="true"
         aria-label="Add new task"
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">New Task</h2>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>New Task</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-white text-2xl leading-none"
+            className="text-2xl leading-none transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
             aria-label="Close"
           >
             &times;
@@ -160,7 +163,7 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
 
         {/* Title */}
         <div className="mb-4">
-          <label htmlFor="task-title" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="task-title" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
             Title
           </label>
           <input
@@ -172,23 +175,32 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
               if (e.target.value.trim()) setTitleError('');
             }}
             placeholder="What do you need to do?"
-            className={`w-full px-3 py-2 rounded-lg bg-gray-800 border text-white placeholder-gray-500 focus:outline-none focus:border-[var(--accent)] ${
-              titleError ? 'border-red-500' : 'border-gray-700'
-            }`}
+            className="w-full px-3 py-2 rounded-lg border focus:outline-none"
+            style={{
+              backgroundColor: '#ffffff',
+              borderColor: titleError ? '#dc2626' : 'var(--border-light)',
+              color: 'var(--text-primary)',
+              boxShadow: 'none',
+            }}
+            onFocus={(e) => { if (!titleError) e.currentTarget.style.borderColor = 'var(--accent)'; }}
+            onBlur={(e) => { if (!titleError) e.currentTarget.style.borderColor = 'var(--border-light)'; }}
           />
           {titleError && (
-            <p className="mt-1 text-sm text-red-400">{titleError}</p>
+            <p className="mt-1 text-sm" style={{ color: '#dc2626' }}>{titleError}</p>
           )}
         </div>
 
         {/* Start Time */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-300 mb-1">Start Time</label>
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Start Time</label>
           <div className="flex gap-2 items-center">
             <select
               value={hour}
               onChange={(e) => setHour(Number(e.target.value))}
-              className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-[var(--accent)]"
+              className="px-3 py-2 rounded-lg border focus:outline-none"
+              style={{ backgroundColor: '#ffffff', borderColor: 'var(--border-light)', color: 'var(--text-primary)' }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+              onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border-light)')}
               aria-label="Hour"
             >
               {HOUR_OPTIONS.map((h) => (
@@ -197,11 +209,14 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
                 </option>
               ))}
             </select>
-            <span className="text-gray-400">:</span>
+            <span style={{ color: 'var(--text-secondary)' }}>:</span>
             <select
               value={minute}
               onChange={(e) => setMinute(Number(e.target.value))}
-              className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-[var(--accent)]"
+              className="px-3 py-2 rounded-lg border focus:outline-none"
+              style={{ backgroundColor: '#ffffff', borderColor: 'var(--border-light)', color: 'var(--text-primary)' }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+              onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border-light)')}
               aria-label="Minute"
             >
               {MINUTE_OPTIONS.map((m) => (
@@ -210,7 +225,7 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
                 </option>
               ))}
             </select>
-            <span className="text-sm text-gray-400 ml-2">
+            <span className="text-sm ml-2" style={{ color: 'var(--text-secondary)' }}>
               {formatTime(startTimeMinutes)}
             </span>
           </div>
@@ -218,13 +233,16 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
 
         {/* Duration */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-300 mb-1">Duration</label>
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Duration</label>
           {!useCustomDuration ? (
             <div className="flex gap-2 items-center">
               <select
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
-                className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-[var(--accent)]"
+                className="px-3 py-2 rounded-lg border focus:outline-none"
+                style={{ backgroundColor: '#ffffff', borderColor: 'var(--border-light)', color: 'var(--text-primary)' }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border-light)')}
                 aria-label="Duration in minutes"
               >
                 {DURATION_PRESETS.map((d) => (
@@ -236,7 +254,7 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
               <button
                 type="button"
                 onClick={() => setUseCustomDuration(true)}
-                className="text-xs hover:opacity-80" style={{ color: 'var(--accent-light)' }}
+                className="text-xs hover:opacity-80" style={{ color: 'var(--accent)' }}
               >
                 Custom
               </button>
@@ -253,12 +271,17 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
                 placeholder="Minutes"
                 min={5}
                 step={5}
-                className={`w-24 px-3 py-2 rounded-lg bg-gray-800 border text-white placeholder-gray-500 focus:outline-none focus:border-[var(--accent)] ${
-                  durationError ? 'border-red-500' : 'border-gray-700'
-                }`}
+                className="w-24 px-3 py-2 rounded-lg border focus:outline-none"
+                style={{
+                  backgroundColor: '#ffffff',
+                  borderColor: durationError ? '#dc2626' : 'var(--border-light)',
+                  color: 'var(--text-primary)',
+                }}
+                onFocus={(e) => { if (!durationError) e.currentTarget.style.borderColor = 'var(--accent)'; }}
+                onBlur={(e) => { if (!durationError) e.currentTarget.style.borderColor = 'var(--border-light)'; }}
                 aria-label="Custom duration in minutes"
               />
-              <span className="text-sm text-gray-400">min</span>
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>min</span>
               <button
                 type="button"
                 onClick={() => {
@@ -266,20 +289,20 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
                   setCustomDuration('');
                   setDurationError('');
                 }}
-                className="text-xs hover:opacity-80" style={{ color: 'var(--accent-light)' }}
+                className="text-xs hover:opacity-80" style={{ color: 'var(--accent)' }}
               >
                 Presets
               </button>
             </div>
           )}
           {durationError && (
-            <p className="mt-1 text-sm text-red-400">{durationError}</p>
+            <p className="mt-1 text-sm" style={{ color: '#dc2626' }}>{durationError}</p>
           )}
         </div>
 
         {/* Hardness */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
             Hardness
           </label>
           <div className="flex gap-1">
@@ -288,12 +311,11 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
                 key={level}
                 type="button"
                 onClick={() => setHardness(level)}
-                className={`text-2xl transition-colors ${
-                  level <= hardness ? 'text-amber-400' : 'text-gray-600'
-                }`}
+                className="text-2xl transition-colors"
+                style={{ color: level <= hardness ? '#84B179' : 'var(--border-light)' }}
                 aria-label={`Hardness ${level} of 5`}
               >
-                ★
+                &#9733;
               </button>
             ))}
           </div>
@@ -302,7 +324,7 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
         {/* Repeatable */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
-            <label htmlFor="repeatable-toggle" className="text-sm font-medium text-gray-300">
+            <label htmlFor="repeatable-toggle" className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
               Repeatable
             </label>
             <button
@@ -314,10 +336,8 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
                 setRepeatable(!repeatable);
                 setRepeatDaysError('');
               }}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
-                repeatable ? '' : 'bg-gray-700'
-              }`}
-              style={repeatable ? { backgroundColor: 'var(--accent)' } : undefined}
+              className="relative w-11 h-6 rounded-full transition-colors"
+              style={{ backgroundColor: repeatable ? 'var(--accent)' : 'var(--border-light)' }}
             >
               <span
                 className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
@@ -334,19 +354,19 @@ export default function TaskFormModal({ isOpen, onClose, defaultDate, source }: 
                     key={day}
                     type="button"
                     onClick={() => toggleDay(day)}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                    className="px-2.5 py-1 rounded-md text-xs font-medium transition-colors"
+                    style={
                       repeatDays.includes(day)
-                        ? 'text-white'
-                        : 'bg-gray-800 text-gray-400 hover:text-white'
-                    }`}
-                    style={repeatDays.includes(day) ? { backgroundColor: 'var(--accent)' } : undefined}
+                        ? { backgroundColor: 'var(--accent)', color: '#ffffff' }
+                        : { backgroundColor: 'var(--accent-tint)', color: 'var(--text-secondary)' }
+                    }
                   >
                     {day}
                   </button>
                 ))}
               </div>
               {repeatDaysError && (
-                <p className="mt-1 text-sm text-red-400">{repeatDaysError}</p>
+                <p className="mt-1 text-sm" style={{ color: '#dc2626' }}>{repeatDaysError}</p>
               )}
             </>
           )}

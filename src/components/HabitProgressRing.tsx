@@ -8,7 +8,7 @@ interface HabitProgressRingProps {
 }
 
 function getRingColor(percentage: number): string {
-  if (percentage <= 0) return '#6B7280';   // gray-500
+  if (percentage <= 0) return '#C7EABB';   // accent-pale (empty state)
   if (percentage < 50) return '#EF4444';   // red
   if (percentage < 80) return '#A2CB8B';   // accent-light
   return '#84B179';                         // accent
@@ -46,7 +46,7 @@ const HabitProgressRing = memo<HabitProgressRingProps>(({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#374151"
+          stroke="#C7EABB"
           strokeWidth={strokeWidth}
         />
         {/* Progress ring */}
@@ -71,8 +71,8 @@ const HabitProgressRing = memo<HabitProgressRingProps>(({
       {/* Percentage text */}
       {!isEmpty && (
         <span
-          className="absolute text-white font-medium leading-none"
-          style={{ fontSize: size <= 38 ? '8px' : '9px' }}
+          className="absolute font-medium leading-none"
+          style={{ fontSize: size <= 38 ? '8px' : '9px', color: 'var(--text-primary)' }}
         >
           {clampedPct}%
         </span>

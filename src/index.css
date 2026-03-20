@@ -1,11 +1,19 @@
 @import "tailwindcss";
 
-/* --- Color palette (colorhunt.co greens) --- */
+/* --- Color palette (green productivity theme) --- */
 :root {
   --accent:       #84B179;
   --accent-light: #A2CB8B;
   --accent-pale:  #C7EABB;
   --accent-tint:  #E8F5BD;
+  --text-primary: #2D3A29;
+  --text-secondary: #5A7A52;
+  --bg-app:       #f0f8e8;
+  --bg-card:      #ffffff;
+  --bg-nav:       #84B179;
+  --border-light: #C7EABB;
+  --hardness-dark-1: #6B9960;
+  --hardness-dark-2: #4A7A3D;
 }
 
 /* --- Modal animations --- */
@@ -82,7 +90,7 @@
 
 .hover-lift:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(45, 58, 41, 0.15);
 }
 
 /* --- Button brighten on hover --- */
@@ -94,9 +102,9 @@
   filter: brightness(1.1);
 }
 
-/* --- Hardness left border accent colors --- */
-.hardness-border-1 { border-left: 3px solid #22c55e; }
-.hardness-border-2 { border-left: 3px solid #14b8a6; }
-.hardness-border-3 { border-left: 3px solid #f59e0b; }
-.hardness-border-4 { border-left: 3px solid #f97316; }
-.hardness-border-5 { border-left: 3px solid #ef4444; }
+/* --- Hardness left border accent colors (green palette) --- */
+.hardness-border-1 { border-left: 3px solid #C7EABB; }
+.hardness-border-2 { border-left: 3px solid #A2CB8B; }
+.hardness-border-3 { border-left: 3px solid #84B179; }
+.hardness-border-4 { border-left: 3px solid #6B9960; }
+.hardness-border-5 { border-left: 3px solid #4A7A3D; }

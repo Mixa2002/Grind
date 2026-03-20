@@ -80,7 +80,7 @@ export default function MonthPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400">
+      <div className="flex items-center justify-center h-64" style={{ color: 'var(--text-secondary)' }}>
         Loading...
       </div>
     );
@@ -90,7 +90,7 @@ export default function MonthPage() {
     <div className="flex flex-col h-[calc(100vh-49px)]">
       {/* Header */}
       <div className="px-6 pt-4 pb-3">
-        <h1 className="text-xl font-bold text-white">{monthLabel}</h1>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{monthLabel}</h1>
       </div>
 
       {/* Calendar Grid */}
@@ -100,7 +100,8 @@ export default function MonthPage() {
           {DAY_HEADERS.map((day) => (
             <div
               key={day}
-              className="text-center text-xs font-medium text-gray-500 py-1"
+              className="text-center text-xs font-medium py-1"
+              style={{ color: 'var(--text-secondary)' }}
             >
               {day}
             </div>
@@ -126,14 +127,13 @@ export default function MonthPage() {
                 <span
                   className={`
                     w-8 h-8 flex items-center justify-center rounded-full text-sm transition-colors
-                    ${!entry.isCurrentMonth ? 'text-gray-600 opacity-40' : ''}
-                    ${entry.isCurrentMonth && !isToday && !isSelected ? 'text-gray-200' : ''}
-                    ${isToday && !isSelected ? 'ring-2 font-semibold' : ''}
-                    ${isSelected && !isToday ? 'text-white font-semibold' : ''}
-                    ${isToday && isSelected ? 'ring-2 text-white font-semibold' : ''}
+                    ${!entry.isCurrentMonth ? 'opacity-30' : ''}
+                    ${isToday && !isSelected ? 'font-semibold' : ''}
+                    ${isSelected ? 'text-white font-semibold' : ''}
                   `}
                   style={{
-                    ...(isToday && !isSelected ? { ringColor: 'var(--accent)', color: 'var(--accent)', boxShadow: '0 0 0 2px var(--accent)' } : {}),
+                    color: !isSelected && entry.isCurrentMonth ? 'var(--text-primary)' : undefined,
+                    ...(isToday && !isSelected ? { boxShadow: '0 0 0 2px var(--accent)', color: 'var(--accent)' } : {}),
                     ...(isSelected ? { backgroundColor: 'var(--accent)' } : {}),
                     ...(isToday && isSelected ? { boxShadow: '0 0 0 2px var(--accent-light)', backgroundColor: 'var(--accent)' } : {}),
                   }}
@@ -145,9 +145,9 @@ export default function MonthPage() {
                   className="w-1.5 h-1.5 rounded-full mt-0.5"
                   style={{
                     backgroundColor: hasTasks && entry.isCurrentMonth
-                      ? 'var(--accent-light)'
+                      ? 'var(--accent)'
                       : hasTasks && !entry.isCurrentMonth
-                        ? 'rgba(162, 203, 139, 0.3)'
+                        ? 'rgba(132, 177, 121, 0.3)'
                         : 'transparent',
                   }}
                 />
@@ -158,10 +158,10 @@ export default function MonthPage() {
       </div>
 
       {/* Selected Day Detail Panel */}
-      <div className="flex-1 flex flex-col min-h-0 mt-3 border-t border-gray-800">
+      <div className="flex-1 flex flex-col min-h-0 mt-3" style={{ borderTop: '1px solid var(--border-light)' }}>
         {/* Panel header */}
         <div className="flex items-center justify-between px-6 py-3">
-          <h2 className="text-base font-semibold text-gray-200">
+          <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
             {formatSelectedDate(selectedDate)}
           </h2>
           <button
@@ -183,10 +183,10 @@ export default function MonthPage() {
             {/* Hour slot rows */}
             {MONTH_DETAIL_HOURS.map((minute) => (
               <div key={minute} className="flex items-start" style={{ height: '28px' }}>
-                <span className="text-[10px] text-gray-600 w-12 shrink-0 select-none leading-none pt-0.5">
+                <span className="text-[10px] w-12 shrink-0 select-none leading-none pt-0.5" style={{ color: 'var(--text-secondary)' }}>
                   {formatTime(minute)}
                 </span>
-                <div className="flex-1 border-t border-gray-800/50" />
+                <div className="flex-1" style={{ borderTop: '1px solid rgba(199, 234, 187, 0.5)' }} />
               </div>
             ))}
 
@@ -206,7 +206,7 @@ export default function MonthPage() {
             {/* No tasks message */}
             {selectedDayTasks.length === 0 && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <p className="text-sm text-gray-600 opacity-60">No tasks</p>
+                <p className="text-sm opacity-60" style={{ color: 'var(--text-secondary)' }}>No tasks</p>
               </div>
             )}
           </div>

@@ -3,20 +3,38 @@ import type { Task } from '../types';
 import { formatTime, getTodayISO } from '../utils';
 import { useStore } from '../stores/useStore';
 
-const HARDNESS_COLORS: Record<number, string> = {
-  1: 'bg-green-900/70 border-green-700',
-  2: 'bg-teal-900/70 border-teal-700',
-  3: 'bg-amber-900/70 border-amber-700',
-  4: 'bg-orange-900/70 border-orange-700',
-  5: 'bg-red-900/70 border-red-700',
+// Green palette hardness colors for light theme
+const HARDNESS_BG: Record<number, string> = {
+  1: '#C7EABB',
+  2: '#A2CB8B',
+  3: '#84B179',
+  4: '#6B9960',
+  5: '#4A7A3D',
 };
 
-const HARDNESS_DONE_COLORS: Record<number, string> = {
-  1: 'bg-green-950/40 border-green-900/50',
-  2: 'bg-teal-950/40 border-teal-900/50',
-  3: 'bg-amber-950/40 border-amber-900/50',
-  4: 'bg-orange-950/40 border-orange-900/50',
-  5: 'bg-red-950/40 border-red-900/50',
+const HARDNESS_BORDER: Record<number, string> = {
+  1: '#A2CB8B',
+  2: '#84B179',
+  3: '#6B9960',
+  4: '#4A7A3D',
+  5: '#3A6630',
+};
+
+// Text color: light text for darker blocks, dark text for lighter blocks
+const HARDNESS_TEXT: Record<number, string> = {
+  1: '#2D3A29',
+  2: '#2D3A29',
+  3: '#ffffff',
+  4: '#ffffff',
+  5: '#ffffff',
+};
+
+const HARDNESS_SUBTEXT: Record<number, string> = {
+  1: 'rgba(45, 58, 41, 0.7)',
+  2: 'rgba(45, 58, 41, 0.7)',
+  3: 'rgba(255, 255, 255, 0.75)',
+  4: 'rgba(255, 255, 255, 0.75)',
+  5: 'rgba(255, 255, 255, 0.75)',
 };
 
 interface TaskBlockProps {
@@ -50,12 +68,14 @@ const TaskBlock = memo<TaskBlockProps>(function TaskBlock({
   const widthPercent = 100 / totalColumns;
   const leftPercent = columnIndex * widthPercent;
 
-  const colorClass = isDone
-    ? HARDNESS_DONE_COLORS[task.hardness] ?? HARDNESS_DONE_COLORS[3]
-    : HARDNESS_COLORS[task.hardness] ?? HARDNESS_COLORS[3];
+  const h = task.hardness;
+  const bg = HARDNESS_BG[h] ?? HARDNESS_BG[3];
+  const border = HARDNESS_BORDER[h] ?? HARDNESS_BORDER[3];
+  const textColor = HARDNESS_TEXT[h] ?? HARDNESS_TEXT[3];
+  const subTextColor = HARDNESS_SUBTEXT[h] ?? HARDNESS_SUBTEXT[3];
 
   const endTime = task.startTime + task.duration;
-  const stars = '★'.repeat(task.hardness);
+  const stars = '\u2605'.repeat(task.hardness);
 
   const hardnessBorderClass = `hardness-border-${task.hardness}`;
 
@@ -63,28 +83,33 @@ const TaskBlock = memo<TaskBlockProps>(function TaskBlock({
     <button
       type="button"
       onClick={() => toggleTaskDone(task.id, todayISO)}
-      className={`absolute rounded-lg border px-2 py-1 overflow-hidden cursor-pointer text-left transition-opacity animate-task-fade-in ${hardnessBorderClass} ${colorClass} ${isDone ? 'opacity-50' : 'opacity-100'}`}
+      className={`absolute rounded-lg px-2 py-1 overflow-hidden cursor-pointer text-left transition-opacity animate-task-fade-in ${hardnessBorderClass} ${isDone ? 'opacity-40' : 'opacity-100'}`}
       style={{
         top: `${topOffset}px`,
         height: `${Math.max(height, 20)}px`,
         left: `calc(${leftPercent}% + 2px)`,
         width: `calc(${widthPercent}% - 4px)`,
         animationDelay: `${animationIndex * 50}ms`,
+        backgroundColor: isDone ? 'rgba(199, 234, 187, 0.4)' : bg,
+        border: `1px solid ${isDone ? 'var(--border-light)' : border}`,
       }}
       aria-label={`${task.title}, ${formatTime(task.startTime)} to ${formatTime(endTime)}, hardness ${task.hardness}${isDone ? ', completed' : ''}`}
     >
       <span
-        className={`block text-sm font-semibold text-white truncate ${isDone ? 'line-through' : ''}`}
+        className={`block text-sm font-semibold truncate ${isDone ? 'line-through' : ''}`}
+        style={{ color: isDone ? 'var(--text-secondary)' : textColor }}
       >
         {task.title}
       </span>
       {height >= 36 && (
-        <span className="block text-xs text-white/70 truncate">
+        <span className="block text-xs truncate" style={{ color: isDone ? 'var(--text-secondary)' : subTextColor }}>
           {formatTime(task.startTime)} – {formatTime(endTime)}
         </span>
       )}
       {height >= 52 && (
-        <span className="block text-xs text-amber-400/80 mt-0.5">{stars}</span>
+        <span className="block text-xs mt-0.5" style={{ color: isDone ? 'var(--text-secondary)' : (h >= 3 ? 'rgba(232, 245, 189, 0.9)' : 'var(--accent)') }}>
+          {stars}
+        </span>
       )}
     </button>
   );

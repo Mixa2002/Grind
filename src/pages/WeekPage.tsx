@@ -67,7 +67,7 @@ export default function WeekPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400">
+      <div className="flex items-center justify-center h-64" style={{ color: 'var(--text-secondary)' }}>
         Loading...
       </div>
     );
@@ -77,7 +77,7 @@ export default function WeekPage() {
     <div className="flex flex-col h-[calc(100vh-49px)]">
       {/* Header */}
       <div className="px-6 pt-4 pb-3">
-        <h1 className="text-xl font-bold text-white">
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
           {formatWeekRange(weekDates)}
         </h1>
       </div>
@@ -92,32 +92,31 @@ export default function WeekPage() {
               <div
                 key={day.iso}
                 className={`flex flex-col ${isToday ? 'rounded-lg' : ''}`}
-                style={isToday ? { backgroundColor: 'rgba(132, 177, 121, 0.08)' } : undefined}
-                style={{ minWidth: '160px', width: '160px' }}
+                style={{
+                  minWidth: '160px',
+                  width: '160px',
+                  ...(isToday ? { backgroundColor: 'rgba(162, 203, 139, 0.15)' } : {}),
+                }}
               >
                 {/* Column Header */}
                 <div
-                  className={`flex items-center justify-between rounded-lg px-3 py-2 mb-2 ${
+                  className="flex items-center justify-between rounded-lg px-3 py-2 mb-2"
+                  style={
                     isToday
-                      ? 'border'
-                      : 'bg-gray-800/60 border border-gray-700/40'
-                  }`}
-                  style={isToday ? { backgroundColor: 'rgba(132, 177, 121, 0.15)', borderColor: 'rgba(132, 177, 121, 0.4)' } : undefined}
+                      ? { backgroundColor: 'var(--accent)', color: '#ffffff' }
+                      : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)' }
+                  }
                 >
                   <div>
                     <span
-                      className={`text-sm font-semibold ${
-                        isToday ? '' : 'text-gray-300'
-                      }`}
-                      style={isToday ? { color: 'var(--accent-pale)' } : undefined}
+                      className="text-sm font-semibold"
+                      style={{ color: isToday ? '#ffffff' : 'var(--text-primary)' }}
                     >
                       {day.dayName}
                     </span>
                     <span
-                      className={`ml-1.5 text-sm ${
-                        isToday ? 'font-bold' : 'text-gray-400'
-                      }`}
-                      style={isToday ? { color: 'var(--accent-light)' } : undefined}
+                      className={`ml-1.5 text-sm ${isToday ? 'font-bold' : ''}`}
+                      style={{ color: isToday ? 'var(--accent-tint)' : 'var(--text-secondary)' }}
                     >
                       {day.dayNumber}
                     </span>
@@ -125,17 +124,16 @@ export default function WeekPage() {
                   <button
                     type="button"
                     onClick={() => openModalForDate(day.iso)}
-                    className="w-6 h-6 rounded-full text-sm font-bold flex items-center justify-center transition-colors text-white"
-                    style={
-                      isToday
-                        ? { backgroundColor: 'var(--accent)' }
-                        : { backgroundColor: '#374151' }
-                    }
+                    className="w-6 h-6 rounded-full text-sm font-bold flex items-center justify-center transition-colors"
+                    style={{
+                      backgroundColor: isToday ? 'rgba(255,255,255,0.25)' : 'var(--accent)',
+                      color: '#ffffff',
+                    }}
                     onMouseEnter={(e) =>
-                      (e.currentTarget.style.backgroundColor = isToday ? 'var(--accent-light)' : '#4B5563')
+                      (e.currentTarget.style.backgroundColor = isToday ? 'rgba(255,255,255,0.35)' : 'var(--accent-light)')
                     }
                     onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor = isToday ? 'var(--accent)' : '#374151')
+                      (e.currentTarget.style.backgroundColor = isToday ? 'rgba(255,255,255,0.25)' : 'var(--accent)')
                     }
                     aria-label={`Add task for ${day.dayName} ${day.dayNumber}`}
                   >
@@ -152,11 +150,11 @@ export default function WeekPage() {
                     return (
                       <div key={minute} className="flex items-center" style={{ height: '28px' }}>
                         {showLabel && (
-                          <span className="text-[9px] text-gray-600 w-full text-center select-none leading-none">
+                          <span className="text-[9px] w-full text-center select-none leading-none" style={{ color: 'var(--text-secondary)' }}>
                             {hourLabel}
                           </span>
                         )}
-                        <div className="absolute left-0 right-0 border-t border-gray-800/40" style={{ pointerEvents: 'none' }} />
+                        <div className="absolute left-0 right-0" style={{ borderTop: '1px solid rgba(199, 234, 187, 0.4)', pointerEvents: 'none' }} />
                       </div>
                     );
                   })}

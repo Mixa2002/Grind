@@ -29,7 +29,7 @@ export default function DayPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400">
+      <div className="flex items-center justify-center h-64" style={{ color: 'var(--text-secondary)' }}>
         Loading...
       </div>
     );
@@ -39,7 +39,7 @@ export default function DayPage() {
     <div className="flex flex-col h-[calc(100vh-49px)]">
       {/* Header */}
       <div className="px-6 pt-4 pb-3">
-        <h1 className="text-xl font-bold text-white">{formatHeaderDate(today)}</h1>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{formatHeaderDate(today)}</h1>
       </div>
 
       {/* Time Grid — always visible */}

@@ -40,8 +40,8 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
-        <nav className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-app)', color: 'var(--text-primary)' }}>
+        <nav className="sticky top-0 z-10 shadow-sm" style={{ backgroundColor: 'var(--bg-nav)' }}>
           <div className="max-w-2xl mx-auto flex">
             {tabs.map((tab) => (
               <NavLink
@@ -50,14 +50,14 @@ export default function App() {
                 className={({ isActive }) =>
                   `flex-1 text-center py-3 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'border-b-2'
-                      : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                      ? 'border-b-2 font-bold'
+                      : 'opacity-80 hover:opacity-100'
                   }`
                 }
                 style={({ isActive }) =>
                   isActive
-                    ? { color: 'var(--accent)', borderBottomColor: 'var(--accent)' }
-                    : undefined
+                    ? { color: '#ffffff', borderBottomColor: 'var(--accent-tint)' }
+                    : { color: 'var(--accent-tint)' }
                 }
               >
                 {tab.label}

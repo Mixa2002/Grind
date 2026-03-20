@@ -45,25 +45,28 @@ export default function AddHabitModal({ isOpen, onClose }: AddHabitModalProps) {
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/60 animate-overlay-fade"
+        className="absolute inset-0 bg-black/50 animate-overlay-fade"
         onClick={handleClose}
         role="presentation"
       />
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-lg bg-gray-900 rounded-t-2xl p-6 pb-8 animate-slide-up overflow-y-auto"
-        style={{ maxHeight: '90vh' }}
+        className="relative w-full max-w-lg rounded-t-2xl p-6 pb-8 animate-slide-up overflow-y-auto"
+        style={{ maxHeight: '90vh', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
         role="dialog"
         aria-modal="true"
         aria-label="Add new habit"
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">New Habit</h2>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>New Habit</h2>
           <button
             type="button"
             onClick={handleClose}
-            className="text-gray-400 hover:text-white text-2xl leading-none"
+            className="text-2xl leading-none transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
             aria-label="Close"
           >
             &times;
@@ -71,13 +74,13 @@ export default function AddHabitModal({ isOpen, onClose }: AddHabitModalProps) {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-950/50 border border-red-800 text-red-300 text-sm">
+          <div className="mb-4 p-3 rounded-lg text-sm" style={{ backgroundColor: 'rgba(220, 38, 38, 0.08)', border: '1px solid rgba(220, 38, 38, 0.3)', color: '#dc2626' }}>
             <p>{error}</p>
           </div>
         )}
 
         <div className="mb-6">
-          <label htmlFor="habit-name" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="habit-name" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
             Habit Name
           </label>
           <input
@@ -91,7 +94,10 @@ export default function AddHabitModal({ isOpen, onClose }: AddHabitModalProps) {
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
             placeholder="e.g. Read 30 minutes"
             autoFocus
-            className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-[var(--accent)]"
+            className="w-full px-3 py-2 rounded-lg border focus:outline-none"
+            style={{ backgroundColor: '#ffffff', borderColor: 'var(--border-light)', color: 'var(--text-primary)' }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+            onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border-light)')}
           />
         </div>
 

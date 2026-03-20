@@ -31,16 +31,22 @@ const WeekTaskCard = memo<WeekTaskCardProps>(function WeekTaskCard({ task, dateI
   return (
     <div
       className={`group relative rounded-lg border px-2.5 py-2 mb-1.5 text-left hover-lift ${hardnessBorderClass} ${
-        isDone
-          ? 'bg-gray-800/40 border-gray-700/50 opacity-50'
-          : 'bg-gray-800 border-gray-700 opacity-100'
+        isDone ? 'opacity-50' : 'opacity-100'
       }`}
+      style={
+        isDone
+          ? { backgroundColor: 'rgba(199, 234, 187, 0.3)', borderColor: 'var(--border-light)' }
+          : { backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-light)' }
+      }
     >
       {/* Delete button */}
       <button
         type="button"
         onClick={handleDelete}
-        className="absolute top-1 right-1 w-5 h-5 rounded-full text-gray-500 hover:text-red-400 hover:bg-red-950/50 text-xs items-center justify-center hidden group-hover:flex transition-colors"
+        className="absolute top-1 right-1 w-5 h-5 rounded-full text-xs items-center justify-center hidden group-hover:flex transition-colors"
+        style={{ color: 'var(--text-secondary)' }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.08)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
         aria-label={`Delete ${task.title}`}
       >
         &times;
@@ -54,30 +60,31 @@ const WeekTaskCard = memo<WeekTaskCardProps>(function WeekTaskCard({ task, dateI
         aria-label={`${task.title}, ${formatTime(task.startTime)}, ${isDone ? 'completed' : 'not completed'}`}
       >
         {/* Time */}
-        <span className="block text-[11px] text-gray-400 leading-tight">
+        <span className="block text-[11px] leading-tight" style={{ color: 'var(--text-secondary)' }}>
           {formatTime(task.startTime)}
         </span>
 
         {/* Title */}
         <span
-          className={`block text-sm font-medium text-white truncate leading-snug ${
+          className={`block text-sm font-medium truncate leading-snug ${
             isDone ? 'line-through' : ''
           }`}
+          style={{ color: 'var(--text-primary)' }}
         >
           {task.title}
         </span>
 
         {/* Duration + Hardness row */}
         <span className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[11px] text-gray-500">{durationLabel}</span>
-          <span className="text-[10px] text-amber-400/80 leading-none">{stars}</span>
+          <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>{durationLabel}</span>
+          <span className="text-[10px] leading-none" style={{ color: 'var(--accent)' }}>{stars}</span>
         </span>
 
         {/* Repeatable badge */}
         {task.repeatable && (
           <span
             className="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded leading-none"
-            style={{ backgroundColor: 'rgba(132, 177, 121, 0.2)', color: 'var(--accent-pale)', borderWidth: '1px', borderColor: 'rgba(132, 177, 121, 0.25)' }}
+            style={{ backgroundColor: 'rgba(132, 177, 121, 0.15)', color: 'var(--accent)', borderWidth: '1px', borderColor: 'rgba(132, 177, 121, 0.25)' }}
           >
             repeat
           </span>
