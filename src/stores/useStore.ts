@@ -6,6 +6,7 @@ interface AppStore {
   tasks: Task[];
   habits: Habit[];
   isLoading: boolean;
+  loadError: string | null;
 
   loadData(): Promise<void>;
   addTask(task: Omit<Task, 'id' | 'completions' | 'createdAt' | 'updatedAt'>): Promise<void>;
@@ -21,14 +22,19 @@ export const useStore = create<AppStore>((set, get) => ({
   tasks: [],
   habits: [],
   isLoading: true,
+  loadError: null,
 
   async loadData() {
-    set({ isLoading: true });
-    const [tasks, habits] = await Promise.all([
-      dataService.getTasks(),
-      dataService.getHabits(),
-    ]);
-    set({ tasks, habits, isLoading: false });
+    set({ tasks: [], habits: [], isLoading: true, loadError: null });
+    try {
+      const [tasks, habits] = await Promise.all([
+        dataService.getTasks(),
+        dataService.getHabits(),
+      ]);
+      set({ tasks, habits, isLoading: false });
+    } catch (err) {
+      set({ isLoading: false, loadError: err instanceof Error ? err.message : 'Failed to load data' });
+    }
   },
 
   async addTask(taskData) {
@@ -63,8 +69,16 @@ export const useStore = create<AppStore>((set, get) => ({
     } else {
       completions[date] = true;
     }
-    const updated = await dataService.updateTask(taskId, { completions });
-    set({ tasks: get().tasks.map((t) => (t.id === taskId ? updated : t)) });
+    // Optimistic update so rapid toggles read the latest intent
+    const optimistic = { ...task, completions };
+    set({ tasks: get().tasks.map((t) => (t.id === taskId ? optimistic : t)) });
+    try {
+      const updated = await dataService.updateTask(taskId, { completions });
+      set({ tasks: get().tasks.map((t) => (t.id === taskId ? updated : t)) });
+    } catch {
+      // Revert on failure
+      set({ tasks: get().tasks.map((t) => (t.id === taskId ? task : t)) });
+    }
   },
 
   async addHabit(name) {
@@ -94,7 +108,15 @@ export const useStore = create<AppStore>((set, get) => ({
     } else {
       completions[date] = true;
     }
-    const updated = await dataService.updateHabit(habitId, { completions });
-    set({ habits: get().habits.map((h) => (h.id === habitId ? updated : h)) });
+    // Optimistic update so rapid toggles read the latest intent
+    const optimistic = { ...habit, completions };
+    set({ habits: get().habits.map((h) => (h.id === habitId ? optimistic : h)) });
+    try {
+      const updated = await dataService.updateHabit(habitId, { completions });
+      set({ habits: get().habits.map((h) => (h.id === habitId ? updated : h)) });
+    } catch {
+      // Revert on failure
+      set({ habits: get().habits.map((h) => (h.id === habitId ? habit : h)) });
+    }
   },
 }));

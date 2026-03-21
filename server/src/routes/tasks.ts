@@ -5,6 +5,9 @@ import { transformTask } from "../utils/transform.js";
 const router = Router();
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+const VALID_DAYS = new Set(DAY_NAMES);
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const VALID_SOURCES = new Set(["day", "week", "month"]);
 
 // GET /api/tasks
 router.get("/", async (req: Request, res: Response): Promise<void> => {
@@ -59,34 +62,52 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ error: "Title is required" });
     return;
   }
-  if (startTime === undefined || startTime === null || typeof startTime !== "number") {
-    res.status(400).json({ error: "startTime is required and must be a number" });
+  const trimmedTitle = title.trim().slice(0, 200);
+  if (trimmedTitle.length === 0) {
+    res.status(400).json({ error: "Title is required" });
     return;
   }
-  if (typeof duration !== "number" || duration < 5 || duration > 180) {
+  if (typeof date === "string" && date.length > 0 && !DATE_RE.test(date)) {
+    res.status(400).json({ error: "Date must be in YYYY-MM-DD format" });
+    return;
+  }
+  if (startTime === undefined || startTime === null || typeof startTime !== "number" || !Number.isInteger(startTime) || startTime < 0 || startTime > 1439) {
+    res.status(400).json({ error: "startTime must be an integer between 0 and 1439" });
+    return;
+  }
+  if (typeof duration !== "number" || !Number.isInteger(duration) || duration < 5 || duration > 180) {
     res.status(400).json({ error: "Duration must be between 5 and 180 minutes" });
     return;
   }
-  if (typeof hardness !== "number" || hardness < 1 || hardness > 5) {
+  if (typeof hardness !== "number" || !Number.isInteger(hardness) || hardness < 1 || hardness > 5) {
     res.status(400).json({ error: "Hardness must be between 1 and 5" });
     return;
   }
-  if (source !== "day" && source !== "week" && source !== "month") {
+  if (!VALID_SOURCES.has(source as string)) {
     res.status(400).json({ error: "Source must be 'day', 'week', or 'month'" });
     return;
+  }
+
+  const validRepeatDays: string[] = [];
+  if (Array.isArray(repeatDays)) {
+    for (const d of repeatDays) {
+      if (typeof d === "string" && VALID_DAYS.has(d as typeof DAY_NAMES[number])) {
+        validRepeatDays.push(d);
+      }
+    }
   }
 
   const task = await prisma.task.create({
     data: {
       userId,
-      title,
+      title: trimmedTitle,
       date: typeof date === "string" ? date : "",
       startTime,
       duration,
       hardness,
       repeatable: repeatable === true,
-      repeatDays: Array.isArray(repeatDays) ? repeatDays as string[] : [],
-      source,
+      repeatDays: validRepeatDays,
+      source: source as string,
     },
     include: { completions: true },
   });
@@ -105,13 +126,60 @@ router.patch("/:id", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const allowedFields = ["title", "date", "startTime", "duration", "hardness", "repeatable", "repeatDays", "source"] as const;
-  const data: Record<string, unknown> = {};
   const body = req.body as Record<string, unknown>;
-  for (const field of allowedFields) {
-    if (body[field] !== undefined) {
-      data[field] = body[field];
+  const data: Record<string, unknown> = {};
+
+  if (body.title !== undefined) {
+    if (typeof body.title !== "string" || body.title.trim().length === 0) {
+      res.status(400).json({ error: "Title must be a non-empty string" });
+      return;
     }
+    data.title = (body.title as string).trim().slice(0, 200);
+  }
+  if (body.date !== undefined) {
+    if (typeof body.date !== "string" || (body.date.length > 0 && !DATE_RE.test(body.date))) {
+      res.status(400).json({ error: "Date must be in YYYY-MM-DD format" });
+      return;
+    }
+    data.date = body.date;
+  }
+  if (body.startTime !== undefined) {
+    if (typeof body.startTime !== "number" || !Number.isInteger(body.startTime) || body.startTime < 0 || body.startTime > 1439) {
+      res.status(400).json({ error: "startTime must be an integer between 0 and 1439" });
+      return;
+    }
+    data.startTime = body.startTime;
+  }
+  if (body.duration !== undefined) {
+    if (typeof body.duration !== "number" || !Number.isInteger(body.duration) || body.duration < 5 || body.duration > 180) {
+      res.status(400).json({ error: "Duration must be between 5 and 180 minutes" });
+      return;
+    }
+    data.duration = body.duration;
+  }
+  if (body.hardness !== undefined) {
+    if (typeof body.hardness !== "number" || !Number.isInteger(body.hardness) || body.hardness < 1 || body.hardness > 5) {
+      res.status(400).json({ error: "Hardness must be between 1 and 5" });
+      return;
+    }
+    data.hardness = body.hardness;
+  }
+  if (body.repeatable !== undefined) {
+    data.repeatable = body.repeatable === true;
+  }
+  if (body.repeatDays !== undefined) {
+    if (!Array.isArray(body.repeatDays)) {
+      res.status(400).json({ error: "repeatDays must be an array" });
+      return;
+    }
+    data.repeatDays = (body.repeatDays as string[]).filter((d) => typeof d === "string" && VALID_DAYS.has(d as typeof DAY_NAMES[number]));
+  }
+  if (body.source !== undefined) {
+    if (!VALID_SOURCES.has(body.source as string)) {
+      res.status(400).json({ error: "Source must be 'day', 'week', or 'month'" });
+      return;
+    }
+    data.source = body.source;
   }
 
   const task = await prisma.task.update({
@@ -142,7 +210,16 @@ router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
 router.post("/:id/completions", async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.id;
   const id = req.params.id as string;
-  const { date, done } = req.body as { date: string; done: boolean };
+  const { date, done } = req.body as { date: unknown; done: unknown };
+
+  if (typeof date !== "string" || !DATE_RE.test(date)) {
+    res.status(400).json({ error: "Date must be in YYYY-MM-DD format" });
+    return;
+  }
+  if (typeof done !== "boolean") {
+    res.status(400).json({ error: "done must be a boolean" });
+    return;
+  }
 
   const existing = await prisma.task.findUnique({ where: { id } });
   if (!existing || existing.userId !== userId) {

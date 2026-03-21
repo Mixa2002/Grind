@@ -115,7 +115,7 @@ const TaskBlock = memo<TaskBlockProps>(function TaskBlock({
         <button
           type="button"
           onClick={handleToggle}
-          className="mt-0.5 w-3.5 h-3.5 rounded flex-shrink-0 flex items-center justify-center cursor-pointer"
+          className="mt-0.5 w-3.5 h-3.5 rounded flex-shrink-0 flex items-center justify-center cursor-pointer p-3 -m-3 box-content"
           style={{
             border: `1.5px solid ${isDone ? 'var(--text-secondary)' : checkboxBorder}`,
             backgroundColor: isDone ? (h >= 3 ? 'rgba(255,255,255,0.5)' : 'rgba(45,58,41,0.2)') : 'transparent',

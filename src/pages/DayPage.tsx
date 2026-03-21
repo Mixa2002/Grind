@@ -1,8 +1,9 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, memo } from 'react';
 import { useStore } from '../stores/useStore.ts';
 import { getTasksForDate, getTodayISO, formatTime } from '../utils/index.ts';
 import TimeGrid from '../components/TimeGrid.tsx';
 import TaskFormModal from '../components/TaskFormModal.tsx';
+import type { Task } from '../types/index.ts';
 
 const DAY_NAMES = [
   'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
@@ -21,7 +22,10 @@ function formatHeaderDate(date: Date): string {
 }
 
 export default function DayPage() {
-  const { tasks, isLoading } = useStore();
+  const tasks = useStore((s) => s.tasks);
+  const isLoading = useStore((s) => s.isLoading);
+  const loadError = useStore((s) => s.loadError);
+  const loadData = useStore((s) => s.loadData);
   const toggleTaskDone = useStore((s) => s.toggleTaskDone);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -49,6 +53,22 @@ export default function DayPage() {
     return (
       <div className="flex items-center justify-center h-64" style={{ color: 'var(--text-secondary)' }}>
         Loading...
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3 px-6">
+        <p className="text-sm text-center" style={{ color: '#dc2626' }}>{loadError}</p>
+        <button
+          type="button"
+          onClick={() => loadData()}
+          className="px-4 py-2 rounded-lg text-sm font-medium text-white"
+          style={{ backgroundColor: 'var(--accent)' }}
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -195,14 +215,12 @@ export default function DayPage() {
 
 /* ---- To Do Card Component ---- */
 
-import type { Task } from '../types/index.ts';
-
 interface TodoCardProps {
   task: Task;
   onToggle: (taskId: string) => void;
 }
 
-function TodoCard({ task, onToggle }: TodoCardProps) {
+const TodoCard = memo<TodoCardProps>(function TodoCard({ task, onToggle }) {
   const durationLabel = `${task.duration} min`;
   const hardnessBorderClass = `hardness-border-${task.hardness}`;
 
@@ -216,7 +234,7 @@ function TodoCard({ task, onToggle }: TodoCardProps) {
         <button
           type="button"
           onClick={() => onToggle(task.id)}
-          className="mt-0.5 w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center transition-colors"
+          className="mt-0.5 w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center transition-colors p-3 -m-3 box-content"
           style={{ borderColor: 'var(--accent)' }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(132, 177, 121, 0.15)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
@@ -253,4 +271,6 @@ function TodoCard({ task, onToggle }: TodoCardProps) {
       </div>
     </div>
   );
-}
+});
+
+TodoCard.displayName = 'TodoCard';

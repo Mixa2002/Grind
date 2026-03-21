@@ -4,6 +4,8 @@ import { transformHabit } from "../utils/transform.js";
 
 const router = Router();
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 // GET /api/habits
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.id;
@@ -26,9 +28,14 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ error: "Name is required" });
     return;
   }
+  const trimmedName = (name as string).trim().slice(0, 100);
+  if (trimmedName.length === 0) {
+    res.status(400).json({ error: "Name is required" });
+    return;
+  }
 
   const habit = await prisma.habit.create({
-    data: { userId, name },
+    data: { userId, name: trimmedName },
     include: { completions: true },
   });
 
@@ -54,7 +61,16 @@ router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
 router.post("/:id/completions", async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.id;
   const id = req.params.id as string;
-  const { date, done } = req.body as { date: string; done: boolean };
+  const { date, done } = req.body as { date: unknown; done: unknown };
+
+  if (typeof date !== "string" || !DATE_RE.test(date)) {
+    res.status(400).json({ error: "Date must be in YYYY-MM-DD format" });
+    return;
+  }
+  if (typeof done !== "boolean") {
+    res.status(400).json({ error: "done must be a boolean" });
+    return;
+  }
 
   const existing = await prisma.habit.findUnique({ where: { id } });
   if (!existing || existing.userId !== userId) {

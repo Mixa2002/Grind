@@ -1,7 +1,7 @@
 import type { Task, Habit } from '../types/index.ts';
 import type { DataService } from './dataService.ts';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api';
 
 // --- Token management (module-level, not localStorage) ---
 
@@ -9,10 +9,6 @@ let _token: string | null = null;
 
 export function setToken(token: string): void {
   _token = token;
-}
-
-export function getToken(): string | null {
-  return _token;
 }
 
 export function clearToken(): void {

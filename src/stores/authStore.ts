@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { setToken, clearToken } from '../services/apiService.ts';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api';
 
 interface AuthUser {
   id: string;

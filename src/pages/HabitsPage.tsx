@@ -124,7 +124,10 @@ const HabitRow = memo<HabitRowProps>(function HabitRow({ habit, todayISO, onTogg
 HabitRow.displayName = 'HabitRow';
 
 export default function HabitsPage() {
-  const { habits, isLoading, toggleHabitCompletion, deleteHabit } = useStore();
+  const habits = useStore((s) => s.habits);
+  const isLoading = useStore((s) => s.isLoading);
+  const toggleHabitCompletion = useStore((s) => s.toggleHabitCompletion);
+  const deleteHabit = useStore((s) => s.deleteHabit);
   const [modalOpen, setModalOpen] = useState(false);
 
   const todayISO = getTodayISO();
@@ -174,10 +177,22 @@ export default function HabitsPage() {
     [deleteHabit],
   );
 
+  const loadError = useStore((s) => s.loadError);
+  const loadData = useStore((s) => s.loadData);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64" style={{ color: 'var(--text-secondary)' }}>
         Loading...
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3 px-6">
+        <p className="text-sm text-center" style={{ color: '#dc2626' }}>{loadError}</p>
+        <button type="button" onClick={() => loadData()} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ backgroundColor: 'var(--accent)' }}>Retry</button>
       </div>
     );
   }

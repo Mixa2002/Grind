@@ -42,7 +42,8 @@ function formatSelectedDate(date: Date): string {
 }
 
 export default function MonthPage() {
-  const { tasks, isLoading } = useStore();
+  const tasks = useStore((s) => s.tasks);
+  const isLoading = useStore((s) => s.isLoading);
   const todayISO = getTodayISO();
   const [selectedISO, setSelectedISO] = useState(todayISO);
   const [modalOpen, setModalOpen] = useState(false);
@@ -78,10 +79,22 @@ export default function MonthPage() {
     );
   }, [tasks, selectedDate]);
 
+  const loadError = useStore((s) => s.loadError);
+  const loadData = useStore((s) => s.loadData);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64" style={{ color: 'var(--text-secondary)' }}>
         Loading...
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3 px-6">
+        <p className="text-sm text-center" style={{ color: '#dc2626' }}>{loadError}</p>
+        <button type="button" onClick={() => loadData()} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ backgroundColor: 'var(--accent)' }}>Retry</button>
       </div>
     );
   }

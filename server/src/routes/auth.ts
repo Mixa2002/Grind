@@ -1,10 +1,26 @@
 import { Router, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import rateLimit from "express-rate-limit";
 import prisma from "../prisma.js";
 import { authenticate } from "../middleware/auth.js";
 
 const router = Router();
+
+// Rate limiting for auth endpoints — prevent brute-force attacks
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 20 attempts per window
+  message: { error: "Too many attempts, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
 
 function generateToken(userId: string): string {
   const secret = process.env.JWT_SECRET;
@@ -15,11 +31,17 @@ function generateToken(userId: string): string {
 }
 
 // POST /api/auth/signup
-router.post("/signup", async (req: Request, res: Response): Promise<void> => {
+router.post("/signup", authLimiter, async (req: Request, res: Response): Promise<void> => {
   const { email, password, name } = req.body;
 
   if (!email || typeof email !== "string") {
     res.status(400).json({ error: "Email is required" });
+    return;
+  }
+
+  const normalizedEmail = normalizeEmail(email);
+  if (!EMAIL_RE.test(normalizedEmail)) {
+    res.status(400).json({ error: "Invalid email format" });
     return;
   }
 
@@ -33,16 +55,22 @@ router.post("/signup", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  const trimmedName = name.trim().slice(0, 100);
+  if (trimmedName.length === 0) {
+    res.status(400).json({ error: "Name is required" });
+    return;
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
   if (existing) {
     res.status(409).json({ error: "Email already in use" });
     return;
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 12);
 
   const user = await prisma.user.create({
-    data: { email, password: hashedPassword, name },
+    data: { email: normalizedEmail, password: hashedPassword, name: trimmedName },
     select: { id: true, email: true, name: true, createdAt: true },
   });
 
@@ -52,7 +80,7 @@ router.post("/signup", async (req: Request, res: Response): Promise<void> => {
 });
 
 // POST /api/auth/login
-router.post("/login", async (req: Request, res: Response): Promise<void> => {
+router.post("/login", authLimiter, async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -60,7 +88,9 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const normalizedEmail = normalizeEmail(email);
+
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
   if (!user) {
     res.status(401).json({ error: "Invalid email or password" });
     return;

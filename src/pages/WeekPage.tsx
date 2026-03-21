@@ -28,12 +28,15 @@ function formatWeekRange(dates: Date[]): string {
 }
 
 export default function WeekPage() {
-  const { tasks, isLoading } = useStore();
+  const tasks = useStore((s) => s.tasks);
+  const isLoading = useStore((s) => s.isLoading);
+  const loadError = useStore((s) => s.loadError);
+  const loadData = useStore((s) => s.loadData);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDate, setModalDate] = useState(getTodayISO());
 
   const weekDates = useMemo(() => getCurrentWeekDates(), []);
-  const todayISO = getTodayISO();
+  const todayISO = useMemo(() => getTodayISO(), []);
 
   const tasksByDay = useMemo(() => {
     return weekDates.map((date) => ({
@@ -58,6 +61,15 @@ export default function WeekPage() {
     return (
       <div className="flex items-center justify-center h-64" style={{ color: 'var(--text-secondary)' }}>
         Loading...
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3 px-6">
+        <p className="text-sm text-center" style={{ color: '#dc2626' }}>{loadError}</p>
+        <button type="button" onClick={() => loadData()} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ backgroundColor: 'var(--accent)' }}>Retry</button>
       </div>
     );
   }

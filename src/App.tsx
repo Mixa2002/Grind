@@ -1,13 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
 import { useStore } from './stores/useStore.ts';
 import { useAuthStore } from './stores/authStore.ts';
-import DayPage from './pages/DayPage.tsx';
-import HabitsPage from './pages/HabitsPage.tsx';
-import WeekPage from './pages/WeekPage.tsx';
-import MonthPage from './pages/MonthPage.tsx';
-import LoginPage from './pages/LoginPage.tsx';
-import SignupPage from './pages/SignupPage.tsx';
+
+const DayPage = lazy(() => import('./pages/DayPage.tsx'));
+const HabitsPage = lazy(() => import('./pages/HabitsPage.tsx'));
+const WeekPage = lazy(() => import('./pages/WeekPage.tsx'));
+const MonthPage = lazy(() => import('./pages/MonthPage.tsx'));
+const LoginPage = lazy(() => import('./pages/LoginPage.tsx'));
+const SignupPage = lazy(() => import('./pages/SignupPage.tsx'));
 
 const tabs = [
   { path: '/day', label: 'Day' },
@@ -27,22 +28,30 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+const PageFallback = () => (
+  <div className="flex items-center justify-center h-64" style={{ color: 'var(--text-secondary)' }}>
+    Loading...
+  </div>
+);
+
 function AppRoutes() {
   const location = useLocation();
 
   return (
     <main className="max-w-2xl mx-auto">
-      <div key={location.pathname} className="animate-page-fade">
-        <Routes location={location}>
-          <Route path="/day" element={<ProtectedRoute><DayPage /></ProtectedRoute>} />
-          <Route path="/habits" element={<ProtectedRoute><HabitsPage /></ProtectedRoute>} />
-          <Route path="/week" element={<ProtectedRoute><WeekPage /></ProtectedRoute>} />
-          <Route path="/month" element={<ProtectedRoute><MonthPage /></ProtectedRoute>} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="*" element={<Navigate to="/day" replace />} />
-        </Routes>
-      </div>
+      <Suspense fallback={<PageFallback />}>
+        <div key={location.pathname} className="animate-page-fade">
+          <Routes location={location}>
+            <Route path="/day" element={<ProtectedRoute><DayPage /></ProtectedRoute>} />
+            <Route path="/habits" element={<ProtectedRoute><HabitsPage /></ProtectedRoute>} />
+            <Route path="/week" element={<ProtectedRoute><WeekPage /></ProtectedRoute>} />
+            <Route path="/month" element={<ProtectedRoute><MonthPage /></ProtectedRoute>} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="*" element={<Navigate to="/day" replace />} />
+          </Routes>
+        </div>
+      </Suspense>
     </main>
   );
 }
